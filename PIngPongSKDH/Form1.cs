@@ -32,11 +32,12 @@ namespace PIngPongSKDH
                 SerialPort currentPort = new SerialPort(port, 9600);
                 Thread.Sleep(10);
                 currentPort.Open();
-                currentPort.Write("Ping");
                 if (port != "COM1")
                 {
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < 100; i++)
                     {
+                        currentPort.Write("Ping");
+                        
                         string answer = currentPort.ReadExisting();
                         Thread.Sleep(10);
                         if (answer.Contains("Pong"))
@@ -46,14 +47,14 @@ namespace PIngPongSKDH
                             currentPort.Close();
                             return true;
                         }
-                        textBox1.Text = answer;
+                        
                     }
                 }
                 currentPort.Close();
             }
 
             Condition.BackColor = Color.Red;
-            //textBox1.Text = "Не найдено подходящего устройства";
+            textBox1.Text = "Не найдено подходящего устройства";
             return false;
         }
     }
