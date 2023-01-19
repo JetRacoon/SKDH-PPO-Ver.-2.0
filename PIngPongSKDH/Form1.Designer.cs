@@ -28,9 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.button1 = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.Condition = new System.Windows.Forms.Button();
+            this.CurrentPort = new System.IO.Ports.SerialPort(this.components);
+            this.Load = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -55,17 +58,28 @@
             this.Condition.BackColor = System.Drawing.Color.Red;
             this.Condition.Enabled = false;
             this.Condition.ForeColor = System.Drawing.Color.White;
-            this.Condition.Location = new System.Drawing.Point(12, 100);
+            this.Condition.Location = new System.Drawing.Point(12, 176);
             this.Condition.Name = "Condition";
             this.Condition.Size = new System.Drawing.Size(34, 22);
             this.Condition.TabIndex = 2;
             this.Condition.UseVisualStyleBackColor = false;
             // 
+            // Load
+            // 
+            this.Load.Location = new System.Drawing.Point(12, 84);
+            this.Load.Name = "Load";
+            this.Load.Size = new System.Drawing.Size(164, 69);
+            this.Load.TabIndex = 3;
+            this.Load.Text = "Загрузка";
+            this.Load.UseVisualStyleBackColor = true;
+            this.Load.Click += new System.EventHandler(this.Load_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(377, 134);
+            this.ClientSize = new System.Drawing.Size(377, 210);
+            this.Controls.Add(this.Load);
             this.Controls.Add(this.Condition);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.button1);
@@ -81,6 +95,8 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button Condition;
+        private System.IO.Ports.SerialPort CurrentPort;
+        private System.Windows.Forms.Button Load;
     }
 }
 

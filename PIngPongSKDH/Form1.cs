@@ -29,33 +29,65 @@ namespace PIngPongSKDH
             string[] ports = SerialPort.GetPortNames();
             foreach (string port in ports)
             {
-                SerialPort currentPort = new SerialPort(port, 9600);
+                CurrentPort.PortName = port;
+                CurrentPort.BaudRate = 9600;
                 Thread.Sleep(10);
-                currentPort.Open();
+                CurrentPort.Open();
                 if (port != "COM1")
                 {
                     for (int i = 0; i < 100; i++)
                     {
-                        currentPort.Write("Ping");
-                        
-                        string answer = currentPort.ReadExisting();
+                        CurrentPort.Write("Ping");
+
+                        string answer = CurrentPort.ReadLine();
                         Thread.Sleep(10);
                         if (answer.Contains("Pong"))
                         {
                             textBox1.Text = answer;
                             Condition.BackColor = Color.Green;
-                            currentPort.Close();
                             return true;
                         }
                         
                     }
                 }
-                currentPort.Close();
+                CurrentPort.Close();
             }
 
             Condition.BackColor = Color.Red;
             textBox1.Text = "Не найдено подходящего устройства";
             return false;
+        }
+
+
+
+        private void Load_Click(object sender, EventArgs e)
+        {
+            string answer = GetData();
+            textBox1.Text = answer;
+        }
+
+        private string GetData()
+        {
+            if (CurrentPort.IsOpen)
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    CurrentPort.Write("Load");
+
+                    string answer = CurrentPort.ReadExisting();
+                    Thread.Sleep(10);
+                    if (answer.Contains("99"))
+                    {
+                        Condition.BackColor = Color.Green;
+                        CurrentPort.Close();
+                        return answer;
+                    }
+
+                }
+
+            }
+            CurrentPort.Close();
+            return "Ошибка порта";
         }
     }
 }
