@@ -72,7 +72,6 @@
             this.Load.TabIndex = 3;
             this.Load.Text = "Загрузка";
             this.Load.UseVisualStyleBackColor = true;
-            this.Load.Click += new System.EventHandler(this.Load_Click);
             // 
             // Form1
             // 

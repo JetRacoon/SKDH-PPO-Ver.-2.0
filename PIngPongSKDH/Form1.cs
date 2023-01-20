@@ -14,6 +14,8 @@ namespace PIngPongSKDH
 {
     public partial class Form1 : Form
     {
+        List<string> ports = new List<string> { };
+        string Port;
         public Form1()
         {
             InitializeComponent();
@@ -21,73 +23,92 @@ namespace PIngPongSKDH
 
         private void button1_Click(object sender, EventArgs e)
         {
-            FindStand();
-        }
-
-        private bool FindStand()
-        {
-            string[] ports = SerialPort.GetPortNames();
-            foreach (string port in ports)
+            if (button1.Text == "Подключиться")
             {
-                CurrentPort.PortName = port;
-                CurrentPort.BaudRate = 9600;
-                Thread.Sleep(10);
-                CurrentPort.Open();
-                if (port != "COM1")
+                Port = FindPort();
+                if (Port != null)
                 {
-                    for (int i = 0; i < 100; i++)
-                    {
-                        CurrentPort.Write("Ping");
+                    button1.Text = "Отключиться";
+                    CurrentPort.PortName = Port;
+                    Success();
+                    CurrentPort.Open();
 
-                        string answer = CurrentPort.ReadLine();
-                        Thread.Sleep(10);
-                        if (answer.Contains("Pong"))
-                        {
-                            textBox1.Text = answer;
-                            Condition.BackColor = Color.Green;
-                            return true;
-                        }
-                        
-                    }
                 }
-                CurrentPort.Close();
-            }
-
-            Condition.BackColor = Color.Red;
-            textBox1.Text = "Не найдено подходящего устройства";
-            return false;
-        }
-
-
-
-        private void Load_Click(object sender, EventArgs e)
-        {
-            string answer = GetData();
-            textBox1.Text = answer;
-        }
-
-        private string GetData()
-        {
-            if (CurrentPort.IsOpen)
-            {
-                for (int i = 0; i < 100; i++)
+                else
                 {
-                    CurrentPort.Write("Load");
+                    Fail();
+                }
+            }
+            else if (button1.Text == "Отключиться")
+            {
+                button1.Text = "Подключиться";
+                if (CurrentPort.IsOpen)
+                {
+                    CurrentPort.Close();
+                    Fail();
+                }
+                else
+                {
+                    Port = null;
+                    ports.Clear();
+                    Fail();
+                }
+            }
+        }
 
-                    string answer = CurrentPort.ReadExisting();
+        private void Info_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private string FindPort()
+        {
+            ports = SerialPort.GetPortNames().ToList();
+            string keyWord = "Ping";
+            try
+            {
+                foreach (string port in ports)
+                {
+                    CurrentPort.PortName = port;
                     Thread.Sleep(10);
-                    if (answer.Contains("99"))
+                    CurrentPort.Open();
+                    if (port != "COM1")
                     {
-                        Condition.BackColor = Color.Green;
-                        CurrentPort.Close();
-                        return answer;
+                        for (int i = 0; i < 100; i++)
+                        {
+                            CurrentPort.Write(keyWord);
+
+                            string answer = CurrentPort.ReadExisting();
+                            Thread.Sleep(10);
+                            if (answer.Contains("Pong"))
+                            {
+                                CurrentPort.Close();
+                                return port;
+                            }
+                        }
                     }
-
+                    CurrentPort.Close();
                 }
-
             }
-            CurrentPort.Close();
-            return "Ошибка порта";
+            catch
+            {
+                MessageBox.Show("Проверьте подключение стенда");
+            }
+            return null;
+        }
+
+        private void Success()
+        {
+            Condition.Text = "Успешное подключение";
+            Condition.BackColor = Color.Green;
+            Condition.ForeColor = Color.Black;
+        }
+
+        private void Fail()
+        {
+            Condition.Text = "Нет подключения";
+            Condition.BackColor = Color.Red;
+            Condition.ForeColor = Color.Black;
         }
     }
 }
