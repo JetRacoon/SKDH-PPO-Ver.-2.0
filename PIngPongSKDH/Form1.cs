@@ -16,6 +16,8 @@ namespace PIngPongSKDH
     {
         List<string> ports = new List<string> { };
         string Port;
+        bool isFound = false;
+        
         public Form1()
         {
             InitializeComponent();
@@ -28,7 +30,6 @@ namespace PIngPongSKDH
                 Port = FindPort();
                 if (Port != null)
                 {
-                    button1.Text = "Отключиться";
                     CurrentPort.PortName = Port;
                     Success();
                     CurrentPort.Open();
@@ -41,7 +42,7 @@ namespace PIngPongSKDH
             }
             else if (button1.Text == "Отключиться")
             {
-                button1.Text = "Подключиться";
+                
                 if (CurrentPort.IsOpen)
                 {
                     CurrentPort.Close();
@@ -53,6 +54,30 @@ namespace PIngPongSKDH
                     ports.Clear();
                     Fail();
                 }
+            }
+        }
+
+        private void Load_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (isFound)
+                {
+                    string data = WaitingAnswer();
+                    if (data != null)
+                    {
+                        textBox1.Text = data;
+                    }
+                    else
+                    {
+                        Fail();
+                    }
+                }
+            }
+            catch
+            {
+                Fail();
+                MessageBox.Show("Проверьте подключение стенда");
             }
         }
 
@@ -70,19 +95,19 @@ namespace PIngPongSKDH
                 foreach (string port in ports)
                 {
                     CurrentPort.PortName = port;
-                    Thread.Sleep(10);
                     CurrentPort.Open();
                     if (port != "COM1")
                     {
                         for (int i = 0; i < 100; i++)
                         {
                             CurrentPort.Write(keyWord);
-
-                            string answer = CurrentPort.ReadExisting();
+                            Thread.Sleep(10);
+                            string answer = CurrentPort.ReadLine();
                             Thread.Sleep(10);
                             if (answer.Contains("Pong"))
                             {
                                 CurrentPort.Close();
+                                isFound = true;
                                 return port;
                             }
                         }
@@ -92,13 +117,18 @@ namespace PIngPongSKDH
             }
             catch
             {
+                isFound = false;
                 MessageBox.Show("Проверьте подключение стенда");
             }
+            isFound = false;
             return null;
         }
 
         private void Success()
         {
+            button1.Text = "Отключиться";
+            Load.Visible = true;
+            Load.Enabled = true;
             Condition.Text = "Успешное подключение";
             Condition.BackColor = Color.Green;
             Condition.ForeColor = Color.Black;
@@ -106,9 +136,29 @@ namespace PIngPongSKDH
 
         private void Fail()
         {
+            button1.Text = "Подключиться";
+            Load.Visible = false;
+            Load.Enabled = false;
             Condition.Text = "Нет подключения";
             Condition.BackColor = Color.Red;
             Condition.ForeColor = Color.Black;
+        }
+
+        private string WaitingAnswer()
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                CurrentPort.Write("Load");
+                Thread.Sleep(10);
+                string answer = CurrentPort.ReadLine();
+                string message = null;
+                if (answer.StartsWith("[") && answer.EndsWith("\r"))
+                {
+                    message = answer;
+                    return answer;
+                }
+            }
+            return null;
         }
     }
 }
