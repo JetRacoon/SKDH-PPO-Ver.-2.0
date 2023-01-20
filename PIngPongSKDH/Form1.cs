@@ -71,6 +71,7 @@ namespace PIngPongSKDH
                         Report.Enabled = true;
                         label1.Visible = true;
                         textBox1.Visible = true;
+                        textBox1.Text = "";
                         label2.Visible = true;
                         textBox2.Visible = true;
                         label3.Visible = true;
@@ -103,8 +104,16 @@ namespace PIngPongSKDH
                 if (DialogResult.OK == saveFileDialog1.ShowDialog())
                 {
                     string location = saveFileDialog1.FileName;
+                    WordHelper helper = new WordHelper();
+                    if (helper.WordTemplate(DateTime.Now.ToString(), textBox1.Text, textBox2.Text, textBox3.Text, location)){
+                        MessageBox.Show("Отчёт сформирован");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Что-то пошло не так. Повторите попытку");
+                    }
                 }
-                WordHelper helper = new WordHelper();
+                
             }
         }
 

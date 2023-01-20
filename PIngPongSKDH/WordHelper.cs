@@ -11,7 +11,7 @@ namespace PIngPongSKDH
 {
     internal class WordHelper
     {
-        public bool WordTemplate(string date, string model, string time, string accuransy, string infomation, string location)
+        public bool WordTemplate(string date, string model, string time, string accuransy, string location)
         {
             Word.Document doc = null;
             string patch = Application.StartupPath.ToString() + "\\Шаблон.docx";
