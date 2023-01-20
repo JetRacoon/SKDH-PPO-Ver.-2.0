@@ -17,7 +17,7 @@ namespace PIngPongSKDH
         List<string> ports = new List<string> { };
         string Port;
         bool isFound = false;
-        
+        string data;
         public Form1()
         {
             InitializeComponent();
@@ -63,14 +63,26 @@ namespace PIngPongSKDH
             {
                 if (isFound)
                 {
-                    string data = WaitingAnswer();
+                    data = WaitingAnswer();
                     if (data != null)
                     {
-                        textBox1.Text = data;
+                        MessageBox.Show("Данные успешно получены");
+                        Report.Visible = true;
+                        Report.Enabled = true;
+                        label1.Visible = true;
+                        textBox1.Visible = true;
+                        label2.Visible = true;
+                        textBox2.Visible = true;
+                        label3.Visible = true;
+                        textBox3.Visible = true;
+                        List<string> dataStand = new List<string>();
+                        dataStand = FilterData(data);
+                        textBox2.Text = dataStand[0];
+                        textBox3.Text = dataStand[1];
                     }
                     else
                     {
-                        Fail();
+                        MessageBox.Show("Данные повреждены. Повторите калибровку и попытайтесь загрузить данные снова");
                     }
                 }
             }
@@ -81,9 +93,19 @@ namespace PIngPongSKDH
             }
         }
 
-        private void Info_Click(object sender, EventArgs e)
+        private void Report_Click(object sender, EventArgs e)
         {
-
+            if(data != null)
+            {
+                saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.Filter = "Word document|*.docx";
+                saveFileDialog1.Title = "Выберите путь сохранения";
+                if (DialogResult.OK == saveFileDialog1.ShowDialog())
+                {
+                    string location = saveFileDialog1.FileName;
+                }
+                WordHelper helper = new WordHelper();
+            }
         }
 
         private string FindPort()
@@ -109,6 +131,12 @@ namespace PIngPongSKDH
                                 CurrentPort.Close();
                                 isFound = true;
                                 return port;
+                            }
+                            else
+                            {
+                                CurrentPort.Close();
+                                isFound = false;
+                                return null;
                             }
                         }
                     }
@@ -139,6 +167,13 @@ namespace PIngPongSKDH
             button1.Text = "Подключиться";
             Load.Visible = false;
             Load.Enabled = false;
+            label1.Visible = false;
+            textBox1.Visible = false;
+            label2.Visible = false;
+            textBox2.Visible = false;
+            Report.Visible = false;
+            label3.Visible = false;
+            textBox3.Visible = false;
             Condition.Text = "Нет подключения";
             Condition.BackColor = Color.Red;
             Condition.ForeColor = Color.Black;
@@ -157,8 +192,32 @@ namespace PIngPongSKDH
                     message = answer;
                     return answer;
                 }
+                else { return null; }
             }
             return null;
         }
+
+        private List<string> FilterData(string data)
+        {
+            List<string> messages = new List<string>();
+            int timeIndex = data.IndexOf('%');
+            messages.Add(data.Substring(1, timeIndex-1));
+            messages.Add(data.Substring(timeIndex + 1));
+
+            return messages;
+        }
+
+        private void Info_Click(object sender, EventArgs e)
+        {
+            string message = "Прикладное программное обеспечение СКДХ\n" +
+                "Версия ППО: 2.0 от 19.01.2023\n" +
+                "Разработчик: ЮЗГУ НИЛ 'МиР'\n" +
+                "Номер телефона: +7(4712)22-26-26\n" +
+                "Email: lab.swsu@gmail.com";
+
+            MessageBox.Show(message);
+        }
+
+
     }
 }
