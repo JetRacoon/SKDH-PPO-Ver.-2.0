@@ -38,6 +38,7 @@ namespace PIngPongSKDH
                 else
                 {
                     Fail();
+                    MessageBox.Show("Проверьте подключение стенда");
                 }
             }
             else if (button1.Text == "Отключиться")
@@ -155,7 +156,7 @@ namespace PIngPongSKDH
             catch
             {
                 isFound = false;
-                MessageBox.Show("Проверьте подключение стенда");
+
             }
             isFound = false;
             return null;
