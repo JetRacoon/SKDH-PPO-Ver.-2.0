@@ -18,6 +18,7 @@ namespace PIngPongSKDH
         string Port;
         bool isFound = false;
         string data;
+        string message;
         public Form1()
         {
             InitializeComponent();
@@ -27,6 +28,7 @@ namespace PIngPongSKDH
         {
             if (button1.Text == "Подключиться")
             {
+                timer1.Start();
                 Port = FindPort();
                 if (Port != null)
                 {
@@ -38,6 +40,7 @@ namespace PIngPongSKDH
                 else
                 {
                     Fail();
+                    MessageBox.Show("Проверьте подключение стенда");
                 }
             }
             else if (button1.Text == "Отключиться")
@@ -59,6 +62,7 @@ namespace PIngPongSKDH
 
         private void Load_Click(object sender, EventArgs e)
         {
+            timer1.Stop();
             try
             {
                 if (isFound)
@@ -67,6 +71,7 @@ namespace PIngPongSKDH
                     if (data != null)
                     {
                         MessageBox.Show("Данные успешно получены");
+                        Condition.Text = "Данные получены";
                         Report.Visible = true;
                         Report.Enabled = true;
                         label1.Visible = true;
@@ -77,13 +82,15 @@ namespace PIngPongSKDH
                         label3.Visible = true;
                         textBox3.Visible = true;
                         List<string> dataStand = new List<string>();
-                        dataStand = FilterData(data);
-                        textBox2.Text = dataStand[0];
-                        textBox3.Text = dataStand[1];
+                        //dataStand = FilterData(data);
+                        textBox2.Text = data;
+                        //textBox3.Text = dataStand[1];
+                        //timer1.Start();
                     }
                     else
                     {
-                        MessageBox.Show("Данные повреждены. Повторите калибровку и попытайтесь загрузить данные снова");
+                        timer1.Start();
+                        MessageBox.Show("Данные повреждены. Повторите калибровку и попытайтесь загрузить данные снова: " + message);
                     }
                 }
             }
@@ -120,7 +127,7 @@ namespace PIngPongSKDH
         private string FindPort()
         {
             ports = SerialPort.GetPortNames().ToList();
-            string keyWord = "Ping";
+            string keyWord = "Load";
             try
             {
                 foreach (string port in ports)
@@ -129,13 +136,13 @@ namespace PIngPongSKDH
                     CurrentPort.Open();
                     if (port != "COM1")
                     {
-                        for (int i = 0; i < 100; i++)
+                        for (int i = 0; i < 20; i++)
                         {
                             CurrentPort.Write(keyWord);
-                            Thread.Sleep(10);
-                            string answer = CurrentPort.ReadLine();
-                            Thread.Sleep(10);
-                            if (answer.Contains("Pong"))
+                            Thread.Sleep(200);
+                            int byteRecieved = CurrentPort.BytesToRead;
+                            
+                            if (byteRecieved > 0)
                             {
                                 CurrentPort.Close();
                                 isFound = true;
@@ -143,11 +150,10 @@ namespace PIngPongSKDH
                             }
                             else
                             {
-                                CurrentPort.Close();
-                                isFound = false;
-                                return null;
+                                continue;
                             }
                         }
+                        return null;
                     }
                     CurrentPort.Close();
                 }
@@ -155,7 +161,7 @@ namespace PIngPongSKDH
             catch
             {
                 isFound = false;
-                MessageBox.Show("Проверьте подключение стенда");
+
             }
             isFound = false;
             return null;
@@ -174,6 +180,7 @@ namespace PIngPongSKDH
         private void Fail()
         {
             button1.Text = "Подключиться";
+            message = null;
             Load.Visible = false;
             Load.Enabled = false;
             label1.Visible = false;
@@ -190,18 +197,28 @@ namespace PIngPongSKDH
 
         private string WaitingAnswer()
         {
-            for (int i = 0; i < 100; i++)
+            Thread.Sleep(1000);
+            CurrentPort.Write("Load");
+            Thread.Sleep(1000);
+            for (int i = 0; i < 20; i++)
             {
-                CurrentPort.Write("Load");
-                Thread.Sleep(10);
-                string answer = CurrentPort.ReadLine();
-                string message = null;
-                if (answer.StartsWith("[") && answer.EndsWith("\r"))
-                {
-                    message = answer;
-                    return answer;
+                Thread.Sleep(20);
+                int byteRecieved = CurrentPort.BytesToRead;
+                if (byteRecieved > 0) {
+                    string answer = CurrentPort.ReadLine();
+                    Thread.Sleep(100);
+                    message = null;
+                    //if (answer.StartsWith("[") && answer.EndsWith("\r"))
+                    //{
+                        message = answer;
+                        return answer;
+                    //}
                 }
-                else { return null; }
+                else {
+                    Thread.Sleep(50);
+                    CurrentPort.Write("Load");
+                    continue; 
+                }
             }
             return null;
         }
@@ -227,6 +244,44 @@ namespace PIngPongSKDH
             MessageBox.Show(message);
         }
 
+        private bool checkConnection(SerialPort port) {
+            try
+            {
+                if (button1.Text == "Отключиться")
+                {
+                    if (port.IsOpen)
+                    {
+                        port.Write("Load");
+                        Thread.Sleep(200);
+                        int byteRecieved = CurrentPort.BytesToRead;
+                        if (byteRecieved > 0)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        Fail();
+                        MessageBox.Show("Проверьте подключение стенда");
+                        return false;
+                    }
+                }
+                else return false;
+            }
+            catch (Exception ex) { return false; }
+        }
 
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (!checkConnection(CurrentPort))
+            {
+                timer1.Stop();
+                Fail();
+            }
+        }
     }
 }
