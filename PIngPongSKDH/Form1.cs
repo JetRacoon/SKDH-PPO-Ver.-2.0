@@ -197,30 +197,26 @@ namespace PIngPongSKDH
 
         private string WaitingAnswer()
         {
-            Thread.Sleep(1000);
-            CurrentPort.Write("Load");
-            Thread.Sleep(1000);
-            for (int i = 0; i < 20; i++)
+        CurrentPort.Write("Load");
+        Thread.Sleep(20);
+        int byteRecieved = CurrentPort.BytesToRead;
+        if (byteRecieved > 0) {
+            string answer = CurrentPort.ReadExisting();
+            Thread.Sleep(100);
+            message = null;
+            if (answer.StartsWith("$") && answer.EndsWith("\r"))
             {
-                Thread.Sleep(20);
-                int byteRecieved = CurrentPort.BytesToRead;
-                if (byteRecieved > 0) {
-                    string answer = CurrentPort.ReadLine();
-                    Thread.Sleep(100);
-                    message = null;
-                    //if (answer.StartsWith("[") && answer.EndsWith("\r"))
-                    //{
-                        message = answer;
-                        return answer;
-                    //}
-                }
-                else {
-                    Thread.Sleep(50);
-                    CurrentPort.Write("Load");
-                    continue; 
-                }
+                message = answer;
+                return answer;
             }
-            return null;
+        }
+        else {
+            Thread.Sleep(50);
+            CurrentPort.Write("Load");
+            continue; 
+        }
+
+        return null;
         }
 
         private List<string> FilterData(string data)
